@@ -7,20 +7,18 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.revature.barbee.model.HTTPRequestMethod;
+import com.revature.barbee.model.HTTPStatus;
 
-public class Request {
-    public HTTPRequestMethod method;
-    public String path;
+public class ExternalResponse {
+    public HTTPStatus status;
     public Map<String, String> headers = new HashMap<>();
     public String body;
-    
-    public Request(InputStream in) throws IOException {
+
+    public ExternalResponse(InputStream in) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
         String line = reader.readLine();
-        String[] requestLine = line.split(" ");
-        this.method = HTTPRequestMethod.valueOf(requestLine[0]);
-        this.path = requestLine[1];
+        String[] statusLine = line.split(" ");
+        this.status = HTTPStatus.valueOfCode(Integer.parseInt(statusLine[1]));
 
         while ((line = reader.readLine()).length() > 0) {
             if (line.contains(":")) {
@@ -28,7 +26,7 @@ public class Request {
                 this.headers.put(tokens[0], tokens[1]);
             }
         }
-        
+
         if (this.headers.containsKey("Content-Length")) {
             int contentLength = Integer.parseInt(this.headers.get("Content-Length"));
             char[] bodyArray = new char[contentLength];

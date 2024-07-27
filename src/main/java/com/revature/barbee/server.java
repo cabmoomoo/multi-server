@@ -7,10 +7,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import com.revature.barbee.model.*;
-import com.revature.barbee.utils.*;
 
-public class server {
+import com.revature.barbee.model.HTTPRequestMethod;
+import com.revature.barbee.utils.Request;
+import com.revature.barbee.utils.Response;
+import com.revature.barbee.utils.ResponseFactory;
+import com.revature.barbee.utils.Servlet;
+
+public class Server {
     private final int port;
     private ServerSocket serverSocket;
     private final Map<HTTPRequestMethod, Map<String, Servlet>> endpointMap = new HashMap<>();
@@ -19,7 +23,7 @@ public class server {
     /*
      * Init the server
      */
-    public server(int port) {
+    public Server(int port) {
         this.port = port;
         Runtime.getRuntime().addShutdownHook(new Thread(() -> shutdown()));
     }
@@ -57,9 +61,6 @@ public class server {
     /*
      * Manage the server
      */
-
-    // TODO: Shutdown doesn't seem to work
-    // The console is never logged and the server only sometimes shuts down when commanded
     public void shutdown() {
         System.out.println("Shutting down...");
         try {
@@ -78,7 +79,6 @@ public class server {
         try {
             this.serverSocket = new ServerSocket(this.port);
             System.out.println("Starting server on port: " + this.port);
-            System.out.println(this.endpointMap.get(HTTPRequestMethod.GET).keySet());
             while (this.serverSocket.isBound()) {
                 Socket client = serverSocket.accept();
                 this.threadPool.execute(() -> handle(client));
@@ -96,19 +96,29 @@ public class server {
             res = new Response(client.getOutputStream());
         } catch (IOException e) {
             System.out.println("IOException encountered. Terminating thread.");
+            System.out.println(e.getMessage());
             return;
         }
+        Servlet servlet;
         try {
             Map<String, Servlet> methodMap = this.endpointMap.get(req.method);
-            Servlet servlet = methodMap.get(req.path);
-            servlet.service(req, res);
+            servlet = methodMap.get(req.path);
+            if (servlet == null) {
+                throw new NullPointerException("Method exists, but path does not");
+            }
         } catch (NullPointerException e) {
             String body = "No servlet exists for the following request:\nMethod: " + req.method.toString() + "; Path: " + req.path;
             System.out.println(body);
+            System.out.println(e.getMessage());
             ResponseFactory.badRequest(res, body)
                 .send();
-            //return; // Return is unnecessary right now, but could save some trouble in the future if we add post-response activities to handle()
+            return;
         }
+        servlet.service(req, res);
+    }
+
+    public void init() {
+
     }
 
 }

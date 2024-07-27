@@ -1,7 +1,9 @@
 package com.revature.barbee.utils;
 
 import java.io.OutputStream;
-import com.revature.barbee.model.*;
+
+import com.revature.barbee.model.HTTPContentType;
+import com.revature.barbee.model.HTTPStatus;
 
 public class ResponseFactory {
     private final Response res;
@@ -51,10 +53,20 @@ public class ResponseFactory {
             .setType(HTTPContentType.PLAIN);
     }
 
+    public static ResponseFactory HTMLOK(Response res) {
+        return new ResponseFactory(res)
+            .setStatus(HTTPStatus.OK)
+            .setType(HTTPContentType.HTML);
+    }
+
+    public static ResponseFactory fileOK(Response res) {
+        return new ResponseFactory(res)
+            .setStatus(HTTPStatus.OK);
+    }
+
     /*
      * Common Responses
      */
-
     public static Response fileNotFoundResponse(Response res) {
         res.status = HTTPStatus.NOT_FOUND;
         res.type = HTTPContentType.PLAIN;
@@ -64,6 +76,13 @@ public class ResponseFactory {
 
     public static Response badRequest(Response res, String body) {
         res.status = HTTPStatus.BAD_REQUEST;
+        res.type = HTTPContentType.PLAIN;
+        res.body = body;
+        return res;
+    }
+
+    public static Response internalServerError(Response res, String body) {
+        res.status = HTTPStatus.INTERNAL_SERVER_ERROR;
         res.type = HTTPContentType.PLAIN;
         res.body = body;
         return res;

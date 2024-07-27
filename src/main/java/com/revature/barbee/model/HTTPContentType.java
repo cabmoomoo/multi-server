@@ -8,6 +8,7 @@ public enum HTTPContentType {
     CSS("text/css"),
     JSON("application/json"),
     PNG("img/png"),
+    ICON("img/vnd.microsoft.icon"), // https://stackoverflow.com/a/13828914
     MP4("video/mp4");
 
     private final String type;
