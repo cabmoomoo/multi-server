@@ -2,7 +2,7 @@ package com.revature.barbee.utils;
 
 import java.io.OutputStream;
 
-import com.revature.barbee.model.HTTPContentType;
+import com.revature.barbee.model.HTTPMIMEType;
 import com.revature.barbee.model.HTTPStatus;
 
 public class ResponseFactory {
@@ -27,7 +27,7 @@ public class ResponseFactory {
         return this;
     }
     
-    public ResponseFactory setType(HTTPContentType type) {
+    public ResponseFactory setType(HTTPMIMEType type) {
         this.res.type = type;
         return this;
     }
@@ -50,13 +50,13 @@ public class ResponseFactory {
     public static ResponseFactory plainOK(Response res) {
         return new ResponseFactory(res)
             .setStatus(HTTPStatus.OK)
-            .setType(HTTPContentType.PLAIN);
+            .setType(HTTPMIMEType.PLAIN);
     }
 
     public static ResponseFactory HTMLOK(Response res) {
         return new ResponseFactory(res)
             .setStatus(HTTPStatus.OK)
-            .setType(HTTPContentType.HTML);
+            .setType(HTTPMIMEType.HTML);
     }
 
     public static ResponseFactory fileOK(Response res) {
@@ -69,21 +69,21 @@ public class ResponseFactory {
      */
     public static Response fileNotFoundResponse(Response res) {
         res.status = HTTPStatus.NOT_FOUND;
-        res.type = HTTPContentType.PLAIN;
+        res.type = HTTPMIMEType.PLAIN;
         res.body = "Could not find file";
         return res;
     }
 
     public static Response badRequest(Response res, String body) {
         res.status = HTTPStatus.BAD_REQUEST;
-        res.type = HTTPContentType.PLAIN;
+        res.type = HTTPMIMEType.PLAIN;
         res.body = body;
         return res;
     }
 
     public static Response internalServerError(Response res, String body) {
         res.status = HTTPStatus.INTERNAL_SERVER_ERROR;
-        res.type = HTTPContentType.PLAIN;
+        res.type = HTTPMIMEType.PLAIN;
         res.body = body;
         return res;
     }

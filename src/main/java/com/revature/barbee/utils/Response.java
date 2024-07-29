@@ -6,14 +6,14 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 
-import com.revature.barbee.model.HTTPContentType;
+import com.revature.barbee.model.HTTPMIMEType;
 import com.revature.barbee.model.HTTPStatus;
 
 public class Response {
     private final PrintWriter out;
     private final OutputStream outputStream;
     HTTPStatus status;
-    HTTPContentType type;
+    HTTPMIMEType type;
     String body = "";
     
     public Response(OutputStream outputStream) {
@@ -32,7 +32,7 @@ public class Response {
         out.println(this.body);
     }
 
-    public void send(String body, HTTPStatus status, HTTPContentType type) {
+    public void send(String body, HTTPStatus status, HTTPMIMEType type) {
         out.println("HTTP/1.1 " + status.toString());
         out.println("Content-Length: " + body.length());
         out.println("Content-Type: " + type.toString());

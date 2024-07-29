@@ -62,11 +62,12 @@ public class Server {
      * Manage the server
      */
     public void shutdown() {
-        System.out.println("Shutting down...");
         try {
             Thread.sleep(1000);
+            System.out.println("Shutting down...");
             this.threadPool.shutdown();
             this.serverSocket.close();
+            System.out.println("Server resources closed successfully.");
         } catch (IOException | InterruptedException e) {
             System.out.println(e.getMessage());
         }

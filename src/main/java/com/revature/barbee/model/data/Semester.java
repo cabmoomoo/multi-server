@@ -17,7 +17,16 @@ public class Semester {
     public Map<Integer, List<Integer>> index_students_courses = new HashMap<>();
     public Map<Integer, Integer> index_course_professor = new HashMap<>();
 
-    public Semester(
+    private static Semester semester_instance = null;
+    private Semester() {}
+    public static Semester get_instance() {
+        if (semester_instance == null) {
+            semester_instance = new Semester();
+        }
+        return semester_instance;
+    }
+
+    public Semester init(
         List<Student> students, 
         List<Professor> professors, 
         List<Course> courses,
@@ -38,6 +47,7 @@ public class Semester {
         this.buildProfessors_CoursesMap(professors_courses);
         this.indexStudentsToCourses();
         this.indexCoursesToProfessors();
+        return this;
     }
 
     public final void buildCourses_StudentsMap(List<Entry<Integer,Integer>> student_course) {

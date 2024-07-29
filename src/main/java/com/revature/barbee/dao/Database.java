@@ -16,10 +16,17 @@ public class Database {
 
     public Database() throws SQLException {
         this.connection = DriverManager.getConnection("jdbc:h2:mem:schedule;INIT=runscript from 'init.sql'", "sa", "");
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> this.close()));
     }
 
-    public void close() throws SQLException {
-        this.connection.close();
+    public void close() {
+        try {
+            this.connection.close();
+            System.out.println("Database connection closed.");
+        } catch (SQLException ex) {
+            System.out.println("Database connection failed to close!");
+            System.out.println(ex.getMessage());
+        }
     }
 
     public List<Entry<Integer, Integer>> selectAllCourses_Professors() throws SQLException {

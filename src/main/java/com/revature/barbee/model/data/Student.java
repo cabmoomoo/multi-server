@@ -20,9 +20,8 @@ public class Student {
 
     public static List<Student> parseCSVString(String csv) {
         List<Student> result = new ArrayList<>();
-        // List<String> columnNames = new ArrayList<>();
         Map<String, Integer> columnIndex = new HashMap<>();
-        String[] lines = csv.split(System.lineSeparator());
+        String[] lines = csv.split("\n");
         String[] headers = lines[0].split(",");
         for (int i = 0; i < headers.length; i++) {
             columnIndex.put(headers[i], i);
@@ -30,9 +29,9 @@ public class Student {
         for (int i = 1; i < lines.length; i++) {
             String[] values = lines[i].split(",");
             result.add(new Student(
-                Integer.parseInt(values[columnIndex.get("id")]),
-                values[columnIndex.get("name")], 
-                Integer.parseInt(values[columnIndex.get("age")])
+                Integer.parseInt(values[columnIndex.get("ID")]),
+                values[columnIndex.get("FULLNAME")], 
+                Integer.parseInt(values[columnIndex.get("AGE")])
             ));
         }
         return result;

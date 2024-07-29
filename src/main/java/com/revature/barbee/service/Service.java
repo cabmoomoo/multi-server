@@ -1,17 +1,20 @@
 package com.revature.barbee.service;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import com.revature.barbee.dao.Database;
 import com.revature.barbee.dao.ExternalConnections;
 import com.revature.barbee.model.MultiServerError;
+import com.revature.barbee.model.data.Course;
+import com.revature.barbee.model.data.Professor;
 import com.revature.barbee.model.data.Semester;
 import com.revature.barbee.model.data.Student;
 import com.revature.barbee.utils.ExampleData;
 
 public class Service {
 
-    private final Semester semseter;
+    private final Semester semester;
     private final Database database;
     private final ExternalConnections externalConnections;
 
@@ -23,10 +26,37 @@ public class Service {
             // TODO: Using temp data
             // Semester constructor should be provided with the results of externalConnections methods
             System.out.println("    Connecting to external databases");
-            this.semseter = new Semester(
-                ExampleData.students, // this.externalConnections.getAllStudents(),
-                ExampleData.professors, 
-                ExampleData.courses,
+            List<Student> students;
+            try {
+                students = this.externalConnections.getAllStudents();
+                System.out.println("        Students successful");
+            } catch (MultiServerError e) {
+                students = ExampleData.students;
+                System.out.println(e.getMessage());
+                System.out.println("        Init failure... falling back to ExampleData.students");
+            }
+            List<Professor> professors;
+            try {
+                professors = this.externalConnections.getAllProfessors();
+                System.out.println("        Professors successful");
+            } catch (MultiServerError e) {
+                professors = ExampleData.professors;
+                System.out.println(e.getMessage());
+                System.out.println("        Init failure... falling back to ExampleData.professors");
+            }
+            List<Course> courses;
+            try {
+                courses = this.externalConnections.getAllCourses();
+                System.out.println("        Courses successful");
+            } catch (MultiServerError e) {
+                courses = ExampleData.courses;
+                System.out.println(e.getMessage());
+                System.out.println("        Init failure... falling back to ExampleData.courses");
+            }
+            this.semester = Semester.get_instance().init(
+                students,
+                professors,
+                courses,
                 database.selectAllStudents_Courses(),
                 database.selectAllCourses_Professors()
             );
@@ -34,79 +64,6 @@ public class Service {
             throw new MultiServerError(String.format("Failed to create Service class:%n") + ex.getMessage());
         }
         
-    }
-    
-    public String viewCoursesProfessorStudents() {
-        String result = "";
-
-        // Starting HTML boilerplate
-        result += 
-            """
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="utf-8">
-                <title>""";
-        result += "Semester Schedule"; // Page title
-        result += 
-            """
-            </title>
-            <style>
-                table, th, td {border: 1px solid black;}
-            </style>
-            </head>
-            <body>
-            """;
-        // Build a table
-        String table = "";
-        table += 
-            """
-                <table>
-                    <tr>
-                        <th>Course</th>
-                        <th>Professor</th>
-                        <th>Students</th>
-                    </tr>
-            """;
-        for (int courseID : this.semseter.courses.keySet()) {
-            table += 
-            """
-                    <tr>
-                        <td>%s</td>
-                        <td>%s</td>
-                        <td>
-            """
-                .formatted(
-                    this.semseter.courses.get(courseID).name, 
-                    this.semseter.professors.get(this.semseter.index_course_professor.get(courseID)).name
-                );
-            for (int studentID : this.semseter.courses_students.get(courseID)) {
-                Student student = this.semseter.students.get(studentID);
-                table += 
-            """
-                            %s<br>
-            """.formatted(student.name);
-            }
-            table +=
-            """
-                        </td>
-                    </tr>
-            """;
-        }
-        table += 
-            """
-                </table>
-            """;
-        result += table;
-        
-        // Ending HTML boilerplate
-        result += 
-            """
-            </body>
-            </html>
-            """;
-
-        return result;
     }
     
 }
