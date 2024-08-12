@@ -3,10 +3,10 @@ package com.revature.barbee;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import com.revature.barbee.model.HTTPRequestMethod;
 import com.revature.barbee.utils.Request;
@@ -16,16 +16,17 @@ import com.revature.barbee.utils.Servlet;
 
 public class Server {
     private final int port;
-    private ServerSocket serverSocket;
+    static ServerSocket serverSocket;
     private final Map<HTTPRequestMethod, Map<String, Servlet>> endpointMap = new HashMap<>();
-    private final ExecutorService threadPool = Executors.newFixedThreadPool(10);
+    private final ExecutorService threadPool = ThreadHandler.getInstance().threadPool;
 
     /*
      * Init the server
      */
     public Server(int port) {
         this.port = port;
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> shutdown()));
+        ShutdownHandler.getInstance().addHandle(this::shutdown);
+        // Runtime.getRuntime().addShutdownHook(new Thread(() -> shutdown()));
     }
 
     /*
@@ -62,14 +63,13 @@ public class Server {
      * Manage the server
      */
     public void shutdown() {
+        System.out.println("    Closing server socket...");
         try {
-            Thread.sleep(1000);
-            System.out.println("Shutting down...");
-            this.threadPool.shutdown();
-            this.serverSocket.close();
-            System.out.println("Server resources closed successfully.");
-        } catch (IOException | InterruptedException e) {
-            System.out.println(e.getMessage());
+            Server.serverSocket.close();
+            System.out.println("    Server socket closed.");
+        } catch (IOException e) {
+            System.out.println("Server socket did not close!");
+            System.out.println("Error: " + e.getMessage());
         }
     }
 
@@ -78,12 +78,16 @@ public class Server {
      */
     public void start() {
         try {
-            this.serverSocket = new ServerSocket(this.port);
+            if (Server.serverSocket == null) {
+                Server.serverSocket = new ServerSocket(this.port);
+            }
             System.out.println("Starting server on port: " + this.port);
-            while (this.serverSocket.isBound()) {
+            while (Server.serverSocket.isBound()) {
                 Socket client = serverSocket.accept();
                 this.threadPool.execute(() -> handle(client));
             }
+        } catch (SocketException ex) {
+            System.exit(0);
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
@@ -116,10 +120,6 @@ public class Server {
             return;
         }
         servlet.service(req, res);
-    }
-
-    public void init() {
-
     }
 
 }

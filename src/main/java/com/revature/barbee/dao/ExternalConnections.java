@@ -38,7 +38,7 @@ public class ExternalConnections {
             students = Student.parseCSVString(req.body);
             conn.disconnect();
         } catch (URISyntaxException | IOException ex) {
-            throw new MultiServerError(String.format("Communication with Students server failed:%n") + ex.getMessage());
+            throw new MultiServerError(String.format("Communication with Students server failed: ") + ex.getMessage());
         }
         return students;
     }
@@ -59,7 +59,7 @@ public class ExternalConnections {
             professors = Professor.parseCSVString(req.body);
             conn.disconnect();
         } catch (URISyntaxException | IOException ex) {
-            throw new MultiServerError(String.format("Communication with Professors server failed:%n") + ex.getMessage());
+            throw new MultiServerError(String.format("Communication with Professors server failed: ") + ex.getMessage());
         }
         return professors;
     }
@@ -80,7 +80,7 @@ public class ExternalConnections {
             courses = Course.parseCSVString(req.body);
             conn.disconnect();
         } catch (URISyntaxException | IOException ex) {
-            throw new MultiServerError(String.format("Communication with Courses server failed:%n") + ex.getMessage());
+            throw new MultiServerError(String.format("Communication with Courses server failed: ") + ex.getMessage());
         }
         return courses;
     }

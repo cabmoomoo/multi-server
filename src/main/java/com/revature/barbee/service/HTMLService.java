@@ -1,8 +1,10 @@
 package com.revature.barbee.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.revature.barbee.model.data.Course;
+import com.revature.barbee.model.data.Professor;
 import com.revature.barbee.model.data.Semester;
 import com.revature.barbee.model.data.Student;
 import com.revature.barbee.utils.HTMLConstructor;
@@ -24,8 +26,8 @@ public class HTMLService {
     }
     
     public String viewCourses() {
-        String table = "";
-        table +=
+        StringBuilder table = new StringBuilder();
+        table.append(
             """
                 <table>
                     <tr>
@@ -33,7 +35,7 @@ public class HTMLService {
                         <th>Professor</th>
                         <th>Enrolled Students</th>
                     </tr>
-            """;
+            """);
         for (Course course : this.semester.courses.values()) {
             Integer professorID = this.semester.index_course_professor.get(course.id);
             String professorName;
@@ -49,7 +51,7 @@ public class HTMLService {
             } else {
                 studentCount = studentIDs.size();
             }
-            table +=
+            table.append(
             """
                     <tr>
                         <td>%s</td>
@@ -60,19 +62,19 @@ public class HTMLService {
                     course.name,
                     professorName,
                     studentCount
-                );
+                ));
         }
-        table +=
+        table.append(
             """
                 </table>
-            """;
+            """);
 
-        return HTMLConstructor.boilerplateHTML("Courses", this.genericTableStyle, table);
+        return HTMLConstructor.boilerplateHTML("Courses", this.genericTableStyle, table).toString();
     }
 
     public String viewCoursesProfessorStudents() {
-        String table = "";
-        table += 
+        StringBuilder table = new StringBuilder();
+        table.append( 
             """
                 <table>
                     <tr>
@@ -80,9 +82,9 @@ public class HTMLService {
                         <th>Professor</th>
                         <th>Students</th>
                     </tr>
-            """;
+            """);
         for (int courseID : this.semester.index_course_professor.keySet()) {
-            table += 
+            table.append( 
             """
                     <tr>
                         <td>%s</td>
@@ -92,26 +94,71 @@ public class HTMLService {
                 .formatted(
                     this.semester.courses.get(courseID).name, 
                     this.semester.professors.get(this.semester.index_course_professor.get(courseID)).name
-                );
+                ));
             for (int studentID : this.semester.courses_students.get(courseID)) {
                 Student student = this.semester.students.get(studentID);
-                table += 
+                table.append( 
             """
                             %s<br>
-            """.formatted(student.name);
+            """.formatted(student.name));
             }
-            table +=
+            table.append( 
             """
                         </td>
                     </tr>
-            """;
+            """);
         }
-        table += 
+        table.append( 
             """
                 </table>
-            """;
+            """);
 
-        return HTMLConstructor.boilerplateHTML("Semester Schedule", this.genericTableStyle, table);
+        return HTMLConstructor.boilerplateHTML("Semester Schedule", this.genericTableStyle, table).toString();
+    }
+
+    public String viewProfessorsCourses() {
+        StringBuilder table = new StringBuilder();
+        table.append(
+            """
+                <table>
+                    <tr>
+                        <th>Professor</th>
+                        <th>Courses</th>
+                    </tr>
+            """
+        );
+        for (Professor professor : this.semester.professors.values()) {
+            List<String> courseNameList = new ArrayList<>();
+            List<Integer> courseIDs = this.semester.professors_courses.get(professor.id);
+            if (courseIDs == null) {
+                courseNameList.add("None");
+            } else {
+                for (Integer courseID : this.semester.professors_courses.get(professor.id)) {
+                    Course course = this.semester.courses.get(courseID);
+                    if (course == null) {
+                        continue;
+                    }
+                    courseNameList.add(course.name);
+                }
+            }
+            StringBuilder courseNames = new StringBuilder();
+            for (String courseName : courseNameList) {
+                courseNames.append("%s<br>".formatted(courseName));
+            }
+            table.append(
+            """
+                    <tr>
+                        <td>%s</td>
+                        <td>%s</td>
+                    </tr>
+            """.formatted(professor.name, courseNames)
+            );
+        }
+        table.append( 
+            """
+                </table>
+            """);
+        return HTMLConstructor.boilerplateHTML("Professors", this.genericTableStyle, table).toString();
     }
     
 }

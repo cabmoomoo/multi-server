@@ -64,6 +64,12 @@ public class ResponseFactory {
             .setStatus(HTTPStatus.OK);
     }
 
+    public static ResponseFactory CSVOK(Response res) {
+        return new ResponseFactory(res)
+            .setStatus(HTTPStatus.OK)
+            .setType(HTTPMIMEType.CSV);
+    }
+
     /*
      * Common Responses
      */

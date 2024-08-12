@@ -1,6 +1,8 @@
 package com.revature.barbee.model;
 
-// Enum built based off of:
+import java.util.HashMap;
+import java.util.Map;
+
 // https://stackoverflow.com/a/48704300
 
 /**
@@ -25,10 +27,21 @@ public enum HTTPMIMEType {
     
     ANY("*/*");
 
+    private static final Map<String, HTTPMIMEType> lookup = new HashMap<>();
+    static {
+        for (HTTPMIMEType x : HTTPMIMEType.values()) {
+            lookup.put(x.toString(), x);
+        }
+    }
+
     private final String type;
 
     HTTPMIMEType(String type) {
         this.type = type;
+    }
+
+    public static HTTPMIMEType get(String MIME) {
+        return lookup.get(MIME);
     }
 
     @Override

@@ -2,7 +2,11 @@ package com.revature.barbee.service;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
+import com.revature.barbee.ThreadHandler;
 import com.revature.barbee.dao.Database;
 import com.revature.barbee.dao.ExternalConnections;
 import com.revature.barbee.model.MultiServerError;
@@ -19,6 +23,7 @@ public class Service {
     private final ExternalConnections externalConnections;
 
     public Service() throws MultiServerError {
+        ExecutorService threadPool = ThreadHandler.getInstance().threadPool;
         try {
             System.out.println("    Connecting to local database");
             this.database = new Database();
@@ -27,30 +32,33 @@ public class Service {
             // Semester constructor should be provided with the results of externalConnections methods
             System.out.println("    Connecting to external databases");
             List<Student> students;
+            List<Professor> professors;
+            List<Course> courses;
+            Future<List<Student>> studentThread = threadPool.submit(() -> {return this.externalConnections.getAllStudents();});
+            Future<List<Professor>> professorThread = threadPool.submit(() -> {return this.externalConnections.getAllProfessors();});
+            Future<List<Course>> courseThread = threadPool.submit(() -> {return this.externalConnections.getAllCourses();});
             try {
-                students = this.externalConnections.getAllStudents();
+                students = studentThread.get();
                 System.out.println("        Students successful");
-            } catch (MultiServerError e) {
+            } catch (InterruptedException | ExecutionException e) {
                 students = ExampleData.students;
-                System.out.println(e.getMessage());
+                System.out.println("Error:" + e.getMessage());
                 System.out.println("        Init failure... falling back to ExampleData.students");
             }
-            List<Professor> professors;
             try {
-                professors = this.externalConnections.getAllProfessors();
+                professors = professorThread.get();
                 System.out.println("        Professors successful");
-            } catch (MultiServerError e) {
+            } catch (InterruptedException | ExecutionException e) {
                 professors = ExampleData.professors;
-                System.out.println(e.getMessage());
+                System.out.println("Error:" + e.getMessage());
                 System.out.println("        Init failure... falling back to ExampleData.professors");
             }
-            List<Course> courses;
             try {
-                courses = this.externalConnections.getAllCourses();
+                courses = courseThread.get();
                 System.out.println("        Courses successful");
-            } catch (MultiServerError e) {
+            } catch (InterruptedException | ExecutionException e) {
                 courses = ExampleData.courses;
-                System.out.println(e.getMessage());
+                System.out.println("Error:" + e.getMessage());
                 System.out.println("        Init failure... falling back to ExampleData.courses");
             }
             this.semester = Semester.get_instance().init(
@@ -64,6 +72,23 @@ public class Service {
             throw new MultiServerError(String.format("Failed to create Service class:%n") + ex.getMessage());
         }
         
+    }
+
+    public String viewProfessorsCSV() {
+        StringBuilder result = new StringBuilder();
+        result.append(
+            """
+            id,name
+            """
+        );
+        for (Professor professor : this.semester.professors.values()) {
+            result.append(
+            """
+            %d,%s
+            """.formatted(professor.id, professor.name)
+            );
+        }
+        return result.toString();
     }
     
 }

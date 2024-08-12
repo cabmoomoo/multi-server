@@ -1,8 +1,13 @@
 package com.revature.barbee;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
+import com.revature.barbee.model.AcceptedHeader;
 import com.revature.barbee.model.HTTPMIMEType;
 import com.revature.barbee.model.HTTPStatus;
 import com.revature.barbee.model.MultiServerError;
@@ -29,6 +34,7 @@ public class ServerController {
         Server server = new Server(port);
         server.addGetEndpoint("/", this::endpointViewSemesterSchedule);
         server.addGetEndpoint("/courses", this::endpointViewCourses);
+        server.addGetEndpoint("/professors", this::endpointViewProfessors);
         server.addGetEndpoint("/favicon.ico", this::endpointGetFavicon);
         server.addGetEndpoint("/test", this::endpointTest);
         server.addPostEndpoint("/pleaseshutdown", this::endpointShutdown);
@@ -49,6 +55,44 @@ public class ServerController {
             .setBody(body)
             .build()
             .send();
+    }
+
+    private void endpointViewProfessors(Request req, Response res) {
+        List<HTTPMIMEType> supported = new ArrayList<>() {{
+            add(HTTPMIMEType.HTML);
+            add(HTTPMIMEType.CSV);
+            add(HTTPMIMEType.ANY_TEXT);
+            add(HTTPMIMEType.ANY);
+        }};
+        Optional<HTTPMIMEType> firstSupported = AcceptedHeader.firstSupported(req.acceptedHeader, supported);
+        if (firstSupported.isEmpty()) {
+            new ResponseFactory(res)
+                .setStatus(HTTPStatus.UNSUPPORTED_MEDIA_TYPE)
+                .setType(HTTPMIMEType.PLAIN)
+                .setBody("The requested media types are not supported by this endpoint.")
+                .build()
+                .send();
+            return;
+        }
+        HTTPMIMEType responseType = AcceptedHeader.firstSupported(req.acceptedHeader, supported).get();
+        String body;
+        switch (responseType) {
+            case HTTPMIMEType.CSV -> {
+                body = this.service.viewProfessorsCSV();
+                ResponseFactory.CSVOK(res)
+                    .setBody(body)
+                    .build()
+                    .send();
+            }
+            default -> {
+                body = this.webService.viewProfessorsCourses();
+                ResponseFactory.HTMLOK(res)
+                    .setBody(body)
+                    .build()
+                    .send();
+            }
+        }
+        
     }
 
     private void endpointGetFavicon(Request req, Response res) {
@@ -81,7 +125,12 @@ public class ServerController {
                 .build()
                 .send();
             System.out.println("Shutdown request recieved from external connection.");
-            System.exit(0);
+            try {
+                Server.serverSocket.close();
+            } catch (IOException ex) {
+                System.out.println("Failed to close Server.serverSocket:");
+                System.out.println(ex.getMessage());
+            }
         } else {
             new ResponseFactory(res)
                 .setStatus(HTTPStatus.UNAUTHORIZED)

@@ -13,36 +13,36 @@ public class HTMLConstructor {
      * @param body Multi-line body of the document
      * @return Completed HTML document in a String
      */
-    public static String boilerplateHTML(String title, String style, String body) {
-        String result = "";
-        result += 
+    public static StringBuilder boilerplateHTML(String title, String style, StringBuilder body) {
+        StringBuilder result = new StringBuilder();
+        result.append( 
             """
             <!DOCTYPE html>
             <html lang="en">
             <head>
                 <meta charset="utf-8">
-                <title>""";
-        result += title; // Page title
-        result += 
+                <title>""");
+        result.append(title); // Page title
+        result.append( 
             """
             </title>
             <style>
-            """;
-        result += style;
-        result += 
+            """);
+        result.append(style);
+        result.append( 
             """
             </style>
             </head>
             <body>
-            """;
+            """);
 
-        result += body;
+        result.append(body);
         
-        result += 
+        result.append(
             """
             </body>
             </html>
-            """;
+            """);
 
         return result;
     }

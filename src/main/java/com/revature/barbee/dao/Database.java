@@ -11,21 +11,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import com.revature.barbee.ShutdownHandler;
+
 public class Database {
     private final Connection connection;
 
     public Database() throws SQLException {
         this.connection = DriverManager.getConnection("jdbc:h2:mem:schedule;INIT=runscript from 'init.sql'", "sa", "");
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> this.close()));
+        ShutdownHandler.getInstance().addHandle(this::close);
+        // Runtime.getRuntime().addShutdownHook(new Thread(() -> this.close()));
     }
 
     public void close() {
+        System.out.println("    Closing database connection...");
         try {
             this.connection.close();
-            System.out.println("Database connection closed.");
+            System.out.println("    Database connection closed.");
         } catch (SQLException ex) {
             System.out.println("Database connection failed to close!");
-            System.out.println(ex.getMessage());
+            System.out.println("Error: " + ex.getMessage());
         }
     }
 
